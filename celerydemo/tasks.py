@@ -34,6 +34,13 @@ def get_it(start_id, max_id, record_count=200000):
 
 @app.task(bind=True)
 def startup(self):
+    # We can put the chord into a sbtask to automatically manage the chord
+    #  By doing this we don't manually need to check that the chord is finished
     tasks = (group_task.s(a, b) for a, b in get_it(0, 100000, 100))
-    result = self.subtask(chord(tasks)(chord_b.si()))
+
+    # We need to pass the chord to ourselves as an iterable item 
+    #  a list in this case
+    result = self.subtask(
+            [chord(tasks)(chord_b.si())]
+    )
     return result
